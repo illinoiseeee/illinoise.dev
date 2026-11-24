@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ILLINOISE</title>
+<meta name="description" content="illinoise.dev">
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Glitch&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: #000;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  h1 {
+    position: relative;
+    margin: 0;
+    font-family: "Rubik Glitch", system-ui, sans-serif;
+    font-weight: 400;
+    font-size: clamp(2.5rem, 13vw, 12rem);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 1;
+    animation: jitter 3.2s infinite steps(1);
+  }
+
+  /* RGB-split glitch layers */
+  h1::before, h1::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+  h1::before {
+    color: #f0f;
+    animation: slice-a 2.4s infinite steps(1);
+  }
+  h1::after {
+    color: #0ff;
+    animation: slice-b 2.9s infinite steps(1);
+  }
+
+  @keyframes jitter {
+    0%, 88%, 100% { transform: none; }
+    89% { transform: translate(-3px, 1px) skewX(4deg); }
+    91% { transform: translate(4px, -2px); }
+    93% { transform: translate(-2px, 0) skewX(-6deg); }
+    95% { transform: none; }
+  }
+  @keyframes slice-a {
+    0%, 100% { clip-path: inset(0 0 100% 0); transform: none; }
+    10% { clip-path: inset(10% 0 70% 0); transform: translate(-6px, 0); }
+    20% { clip-path: inset(60% 0 15% 0); transform: translate(5px, 0); }
+    30% { clip-path: inset(0 0 100% 0); }
+    62% { clip-path: inset(35% 0 40% 0); transform: translate(-8px, 0); }
+    66% { clip-path: inset(80% 0 5% 0); transform: translate(6px, 0); }
+    70% { clip-path: inset(0 0 100% 0); }
+  }
+  @keyframes slice-b {
+    0%, 100% { clip-path: inset(0 0 100% 0); transform: none; }
+    15% { clip-path: inset(50% 0 30% 0); transform: translate(7px, 0); }
+    25% { clip-path: inset(5% 0 80% 0); transform: translate(-5px, 0); }
+    35% { clip-path: inset(0 0 100% 0); }
+    75% { clip-path: inset(70% 0 10% 0); transform: translate(8px, 0); }
+    80% { clip-path: inset(20% 0 60% 0); transform: translate(-6px, 0); }
+    85% { clip-path: inset(0 0 100% 0); }
+  }
+
+  /* Noise canvas background */
+  #noise {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.12;
+    pointer-events: none;
+    image-rendering: pixelated;
+  }
+
+  /* Scanlines */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.03) 0,
+      rgba(255,255,255,0.03) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    h1, h1::before, h1::after { animation: none; }
+    h1::before, h1::after { display: none; }
+  }
+</style>
+</head>
+<body>
+  <canvas id="noise" aria-hidden="true"></canvas>
+  <h1 data-text="ILLINOISE">ILLINOISE</h1>
+
+<script>
+(() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const c = document.getElementById('noise');
+  const ctx = c.getContext('2d');
+  const W = 256, H = 256;
+  c.width = W; c.height = H;
+  const img = ctx.createImageData(W, H);
+  const d = img.data;
+  let last = 0;
+  function frame(t) {
+    if (t - last > 60) {
+      last = t;
+      for (let i = 0; i < d.length; i += 4) {
+        const v = Math.random() * 255;
+        d[i] = d[i+1] = d[i+2] = v;
+        d[i+3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
